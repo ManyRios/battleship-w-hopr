@@ -1,25 +1,49 @@
-import {useRouter} from 'next/router'
+import { useRouter } from "next/router";
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect } from "react";
 import { Col, Row, Button } from "react-bootstrap";
 import { useStateContext } from "../src/context/StateContext";
 import { Footer, ModalDialog } from "../src/components";
 
 const Home = () => {
-  const router = useRouter()
-  const { handleModal, configured, httpEndpoint, securityToken } = useStateContext();
+  const router = useRouter();
+  const {
+    handleModal,
+    configured,
+    httpEndpoint,
+    setWsEndpoint,
+    securityToken,
+    setHTTPEndpoint,
+    setSecurityToken,
+  } = useStateContext();
 
-  
- const  handleClick = () => {
-  router.push({
-    pathname: "/game",
-    query: {
-      apiEndpoint: httpEndpoint,
-      apiToken: securityToken,
-    },
-  });
- }
+  useEffect(() => {
+    const getParamsUrl = () => {
+      if (router.query.apiEndpoint) {
+        setHTTPEndpoint(router.query.apiEndpoint);
+        setWsEndpoint(`${httpEndpoint}/api/v2/messages/websocket`);
+      }
+      if (router.query.apiToken) {
+        setSecurityToken(router.query.apiToken);
+      }
+    };
+    getParamsUrl();
+  }, [router]);
 
+  const handleClick = () => {
+    router.push(
+      {
+        pathname: "/game",
+        query: {
+          apiEndpoint: httpEndpoint,
+          apiToken: securityToken,
+        },
+      },
+      undefined,
+      { shallow: true }
+    );
+  };
 
   return (
     <>
@@ -46,11 +70,13 @@ const Home = () => {
             </Button>
           </Row>
           <Row className="h-100">
-            
-              <Button className="m-2 p-3" onClick={handleClick} disabled={configured ? false : true}>
-                Play
-              </Button>
-            
+            <Button
+              className="m-2 p-3"
+              onClick={handleClick}
+              disabled={configured ? false : true}
+            >
+              Play
+            </Button>
           </Row>
           <Row className="h-100">
             <Link href={"https://docs.hoprnet.org/v1.86/about-hopr"} passHref>

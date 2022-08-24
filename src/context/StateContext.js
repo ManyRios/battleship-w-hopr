@@ -27,8 +27,19 @@ export const StateContext = ({ children }) => {
   const [temp, setTemp] = useState([]);
   const [join, setJoin] = useState(false);
 
-  const websocket = useWebsocket({ wsEndpoint, securityToken });
-  const { socketRef } = websocket;
+  useEffect(() => {
+    const loadAddress = async () => {
+      const headers = getHeaders(securityToken);
+
+      const account = await fetch(`${httpEndpoint}/api/v2/account/addresses`, {
+        headers,
+      })
+        .then((res) => res.json())
+        .catch((err) => console.error(err));
+      setAddress(account?.hopr);
+    };
+    if (httpEndpoint) loadAddress();
+  }, [securityToken, httpEndpoint]);
 
   const handleModal = (e) => {
     e.preventDefault();
@@ -46,21 +57,8 @@ export const StateContext = ({ children }) => {
     }
   }, [httpEndpoint, wsEndpoint, securityToken, setConfigured]);
 
-  useEffect(() => {
-    const loadAddress = async () => {
-      const headers = getHeaders(securityToken);
-      setWsEndpoint(`${httpEndpoint}/api/v2/messages/websocket`);
-      const account = await fetch(`${httpEndpoint}/api/v2/account/addresses`, {
-        headers,
-      })
-        .then((res) => res.json())
-        .catch((err) => console.error(err));
-      setAddress(account?.hopr);
-    };
-    loadAddress();
-  }, [securityToken, httpEndpoint]);
-
   const sendMessage = (recipient, body) => {
+   
     if (!address) return;
 
     try {
@@ -88,64 +86,6 @@ export const StateContext = ({ children }) => {
     setNotification(`You have sent the move ${move} to referee ${referee}`);
   };
 
-  const decodeMessage = (msg) => {
-    const uint8Array = new Uint8Array(JSON.parse(`[${msg}]`));
-    const decodedArray = decode(uint8Array);
-
-    if (decodedArray[0] instanceof Uint8Array) {
-      const message = new TextDecoder().decode(decodedArray[0]);
-      return message;
-    }
-    throw Error(`Could not decode received message: ${msg}`);
-  };
-  const handleReceivedMessage = async (ev) => {
-    try {
-      const res = decodeMessage(ev.data);
-      const data = JSON.parse(res);
-
-      if (data.type === "message") {
-        const msg = data.msg;
-
-        setMessages((state) => [...state, { received: true, message: msg }]);
-      }
-
-      if (data.type === "board") {
-        const board = data.board;
-        const parse = JSON.stringify(board);
-
-        saveShips(JSON.parse(parse));
-      }
-      if (data.type === "position") {
-        const position = data.position;
-        setEnemyFire(position);
-        changeTurn();
-      }
-
-      if (data.type === "connection") {
-        const connect = data.type;
-        if (data.addresss) {
-          setEnemyAddress(data.addresss.toString());
-        } else if (data.connection) {
-        }
-        if (!connected) connection(connect);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    const getParamsUrl = () => {
-      if (router.query.apiEndpoint) {
-        setHTTPEndpoint(router.query.apiEndpoint);
-      }
-      if (router.query.apiToken) {
-        setSecurityToken(router.query.apiToken);
-      }
-    };
-    getParamsUrl();
-  }, [router]);
-
   const saveShips = (layout) => {
     let arr = Object.values(layout);
     setTemp([...arr]);
@@ -159,16 +99,6 @@ export const StateContext = ({ children }) => {
     }
   };
 
-  useEffect(() => {
-    if (!socketRef.current) return;
-    socketRef.current.addEventListener("message", handleReceivedMessage);
-
-    return () => {
-      if (!socketRef.current) return;
-      socketRef.current.removeEventListener("message", handleReceivedMessage);
-    };
-  }, [socketRef.current]);
-
   const joinBattle = () => {
     setJoin(true);
     sendMessage(
@@ -180,10 +110,6 @@ export const StateContext = ({ children }) => {
   const connection = () => {
     setConnected(true);
     alert("connected with node", enemyAddress);
-    sendMessage(
-      enemyAddress,
-      JSON.stringify({ type: "connection", connection: connected })
-    );
   };
 
   const sendBoardToEnemy = () => {
@@ -240,6 +166,8 @@ export const StateContext = ({ children }) => {
         setGameState,
         setMessages,
         messages,
+        connection,
+        saveShips,
       }}
     >
       {children}
