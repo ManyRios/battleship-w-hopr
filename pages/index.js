@@ -5,7 +5,19 @@ import { useStateContext } from "../src/context/StateContext";
 import { Footer, ModalDialog } from "../src/components";
 
 const Home = () => {
-  const { handleModal, configured } = useStateContext();
+  const { handleModal, configured, httpEndpoint, securityToken } = useStateContext();
+
+  const href = `/game?apiEndpoint=${httpEndpoint}&apiToken=${securityToken}`
+ const  handleClick = () => {
+  router.push({
+    pathname: "/game",
+    query: {
+      apiEndpoint: httpEndpoint,
+      apiToken: securityToken,
+    },
+  });
+ }
+
 
   return (
     <>
@@ -32,7 +44,7 @@ const Home = () => {
             </Button>
           </Row>
           <Row className="h-100">
-            <Link href="/game">
+            <Link href={href} onClick={handleClick}>
               <Button className="m-2 p-3" disabled={configured ? false : true}>
                 Play
               </Button>
