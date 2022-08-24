@@ -20,7 +20,7 @@ The game has been made in react/next without redux.
 
 ## Direct link 
 ```bash
-  https://battleship-w-hopr.vercel.app/game?apiEndpoint="ENDPOINT"&apiToken="securityToken"
+  https://battleship-w-hopr.vercel.app/?apiEndpoint="ENDPOINT"&apiToken="securityToken"
 ```
 
 
