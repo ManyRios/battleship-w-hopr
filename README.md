@@ -26,7 +26,15 @@ The game has been made in react/next without redux.
 
 ### Steps explained in this demo video: 
 
-https://user-images.githubusercontent.com/34518489/185076832-0e5a0d3b-84c6-4f78-a772-1bf02407f2d5.mp4
+
+https://user-images.githubusercontent.com/34518489/186543468-1959a313-d5ce-4800-b840-7323da0f7b02.mp4
+
+
+
+### ToDo
+
+- Notifications for chat messages
+- Improve better UI 
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 ## Getting Started
