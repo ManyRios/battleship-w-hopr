@@ -15,6 +15,7 @@ import { AVAILABLE_SHIPS } from "../../utils/constants";
 
 import { useStateContext } from "../../context/StateContext";
 
+
 const GameBoard = () => {
   const [winner, setWinner] = useState(null);
 
@@ -35,6 +36,8 @@ const GameBoard = () => {
     join,
     gameState,
     setGameState,
+    httpEndpoint,
+    securityToken
   } = useStateContext();
 
   // *** PLAYER ***
@@ -294,6 +297,7 @@ const GameBoard = () => {
         setEnemyShips={setEnemyShips}
         playSound={playSound}
       />
+      
     </>
   );
 };

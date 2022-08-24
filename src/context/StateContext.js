@@ -1,11 +1,14 @@
+import { useRouter } from "next/router";
 import { createContext, useContext, useState, useEffect } from "react";
 import { getHeaders } from "../components/utils";
-import { useImmer } from "use-immer";
+import { decode } from "rlp";
 import useWebsocket from "../hooks/WebSocketHandler";
 
 const Context = createContext();
 
 export const StateContext = ({ children }) => {
+  const router = useRouter();
+
   const [showModal, setShowModal] = useState(false);
   const [showModalConnect, setShowModalConnect] = useState(false);
   const [httpEndpoint, setHTTPEndpoint] = useState("");
@@ -46,6 +49,7 @@ export const StateContext = ({ children }) => {
   useEffect(() => {
     const loadAddress = async () => {
       const headers = getHeaders(securityToken);
+      setWsEndpoint(`${httpEndpoint}/api/v2/messages/websocket`);
       const account = await fetch(`${httpEndpoint}/api/v2/account/addresses`, {
         headers,
       })
@@ -58,6 +62,7 @@ export const StateContext = ({ children }) => {
 
   const sendMessage = (recipient, body) => {
     if (!address) return;
+
     try {
       fetch(`${httpEndpoint}/api/v2/messages`, {
         method: "POST",
@@ -83,43 +88,63 @@ export const StateContext = ({ children }) => {
     setNotification(`You have sent the move ${move} to referee ${referee}`);
   };
 
+  const decodeMessage = (msg) => {
+    const uint8Array = new Uint8Array(JSON.parse(`[${msg}]`));
+    const decodedArray = decode(uint8Array);
+
+    if (decodedArray[0] instanceof Uint8Array) {
+      const message = new TextDecoder().decode(decodedArray[0]);
+      return message;
+    }
+    throw Error(`Could not decode received message: ${msg}`);
+  };
   const handleReceivedMessage = async (ev) => {
     try {
-      const data = JSON.parse(ev.data);
+      const res = decodeMessage(ev.data);
+      const data = JSON.parse(res);
+
       if (data.type === "message") {
-        const income = JSON.parse(data.msg);
-       
-        if (income.type === "message") {
-          const msg = income.msg;
-          setMessages((state) => [...state, { received: true, message: msg }]);
-          
-        }
+        const msg = data.msg;
 
-        if (income.type === "board") {
-          const board = income.board;
-          const parse = JSON.stringify(board);
+        setMessages((state) => [...state, { received: true, message: msg }]);
+      }
 
-          saveShips(JSON.parse(parse));
-        }
-        if (income.type === "position") {
-          const position = income.position;
-          setEnemyFire(position);
-          changeTurn();
-        }
+      if (data.type === "board") {
+        const board = data.board;
+        const parse = JSON.stringify(board);
 
-        if (income.type === "connection") {
-          const connect = income.type;
-          if (income.addresss) {
-            setEnemyAddress(income.addresss.toString());
-          } else if (income.connection) {
-          }
-          if (!connected) connection(connect);
+        saveShips(JSON.parse(parse));
+      }
+      if (data.type === "position") {
+        const position = data.position;
+        setEnemyFire(position);
+        changeTurn();
+      }
+
+      if (data.type === "connection") {
+        const connect = data.type;
+        if (data.addresss) {
+          setEnemyAddress(data.addresss.toString());
+        } else if (data.connection) {
         }
+        if (!connected) connection(connect);
       }
     } catch (err) {
       console.error(err);
     }
   };
+
+  useEffect(() => {
+    const getParamsUrl = () => {
+      if (router.query.apiEndpoint) {
+        setHTTPEndpoint(router.query.apiEndpoint);
+      }
+      if (router.query.apiToken) {
+        setSecurityToken(router.query.apiToken);
+      }
+    };
+    getParamsUrl();
+  }, [router]);
 
   const saveShips = (layout) => {
     let arr = Object.values(layout);

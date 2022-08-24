@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react'
-import useWebsocket from '../hooks/useWebSockets'
+import useWebsocket from '../hooks/WebSocketHandler'
 
 export const WebSocketHandler = ({
   wsEndpoint,
   securityToken,
-  multipleMessages = false,
-  messages = [],
   setMessages = () => {}
 }) => {
   const [message, setMessage] = useState('')
@@ -36,15 +34,7 @@ export const WebSocketHandler = ({
 
   return (
     <>
-      {multipleMessages ? (
-        <div>
-          {messages.map((message, i) => (
-            <p key={i}>{message}</p>
-          ))}
-        </div>
-      ) : (
-        <span>{message ? message : 'You have no messages.'}</span>
-      )}
+      
     </>
   )
 }

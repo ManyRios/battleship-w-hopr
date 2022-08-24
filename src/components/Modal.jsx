@@ -25,16 +25,7 @@ const ModalDialog = () => {
         <Modal.Title>Fill the required fields to play</Modal.Title>
       </Modal.Header>
       <Modal.Body>
-        <Form.Group>
-          <Form.Label>WS Endpoint</Form.Label>
-          <Form.Control
-            type="text"
-            name="wsEndpoint"
-            placeholder={wsEndpoint}
-            value={wsEndpoint}
-            onChange={(e) => setWsEndpoint(e.target.value)}
-          />
-        </Form.Group>
+        
         <Form.Group>
           <Form.Label>HTTP Endpoint</Form.Label>
           <Form.Control
@@ -67,3 +58,14 @@ const ModalDialog = () => {
 };
 
 export default ModalDialog;
+
+{/* <Form.Group>
+          <Form.Label>WS Endpoint</Form.Label>
+          <Form.Control
+            type="text"
+            name="wsEndpoint"
+            placeholder={wsEndpoint}
+            value={wsEndpoint}
+            onChange={(e) => setWsEndpoint(e.target.value)}
+          />
+        </Form.Group> */}

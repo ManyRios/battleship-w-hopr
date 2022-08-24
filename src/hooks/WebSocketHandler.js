@@ -50,7 +50,9 @@ const useWebsocket = (settings) => {
 
     // need to set the token in the query parameters, to enable websocket authentication
     try {
-      const wsUrl = new URL(settings.wsEndpoint)
+      
+      const wsUrl = new URL(settings.wsEndpoint);
+      wsUrl.protocol = wsUrl.protocol === 'https:' ? 'wss' : 'ws'
 
       if (settings.securityToken) {
         wsUrl.search = `?apiToken=${settings.securityToken}`
@@ -68,7 +70,9 @@ const useWebsocket = (settings) => {
       console.error('URL is invalid', settings.wsEndpoint)
     }
 
-    // cleanup when unmounting
+    //http://localhost:3000/game?apiEndpoint=https%3A%2F%2one_deimos_elbe_black.playground.hoprnet.org%3A3001&apiToken=e922Dbdf9ba2EbfD1bD54%238b
+
+    // cleanup when unmountinge922Dbdf9ba2EbfD1bD54#8b
     return () => {
       if (!socketRef.current) return
 
